@@ -1,0 +1,25 @@
+#ifndef clox_vm_h
+#define clox_vm_h
+
+#include "chunk.h"
+#include <stdint.h>
+
+typedef struct {
+  Chunk *chunk;
+  // the location in the bytecode of the instruction that is about to be
+  // executed.
+  // ip == "instruction pointer"
+  uint8_t *ip;
+} VM;
+
+typedef enum {
+  INTERPRET_OK,
+  INTERPRET_COMPILE_ERROR,
+  INTERPRET_RUNTIME_ERROR
+} InterpretResult;
+
+void initVM();
+void freeVM();
+InterpretResult interpret(Chunk *chunk);
+
+#endif
