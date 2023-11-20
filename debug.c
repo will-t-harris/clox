@@ -20,12 +20,14 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset) {
   printValue(chunk->constants.values[constant]);
   printf("'\n");
 
+  // return the offset of the next instruction
   return offset + 2;
 }
 
 static int simpleInstruction(const char *name, int offset) {
   printf("%s\n", name);
 
+  // return the offset of the next instruction
   return offset + 1;
 }
 
