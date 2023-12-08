@@ -145,8 +145,6 @@ static void parsePrecedence(Precedence precedence) {
   }
 }
 
-static ParseRule *getRule(TokenType type) { return &rules[type]; }
-
 static void expression() { parsePrecedence(PREC_ASSIGNMENT); }
 
 static void binary() {
@@ -249,6 +247,8 @@ ParseRule rules[] = {
   [TOKEN_ERROR]         = {NULL,      NULL,    PREC_NONE},
   [TOKEN_EOF]           = {NULL,      NULL,    PREC_NONE},
 };
+
+static ParseRule *getRule(TokenType type) { return &rules[type]; }
 
 bool compile(const char *source, Chunk *chunk) {
   initScanner(source);
