@@ -12,6 +12,23 @@ typedef struct {
   bool panicMode;
 } Parser;
 
+// All precedence levels in order from lowest to highest.
+// C implicitly gives enum members successively larger numbers, which simplifies
+// precedence comparison.
+typedef enum {
+  PREC_NONE,
+  PREC_ASSIGNMENT, // =
+  PREC_OR,         // or
+  PREC_AND,        // and
+  PREC_EQUALITY,   // == !=
+  PREC_COMPARISON, // < > <= >=
+  PREC_TERM,       // + -
+  PREC_FACTOR,     // * /
+  PREC_UNARY,      // ! -
+  PREC_CALL,       // . ()
+  PREC_PRIMARY
+} Precedence;
+
 Parser parser;
 Chunk *compilingChunk;
 
@@ -79,7 +96,57 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 
 static void emitReturn() { emitByte(OP_RETURN); }
 
+static uint8_t makeConstant(Value value) {
+  int constant = addConstant(currentChunk(), value);
+
+  if (constant > UINT8_MAX) {
+    error("Too many constants in one chunk.");
+    return 0;
+  }
+
+  return (uint8_t)constant;
+}
+
+static void emitConstant(Value value) {
+  emitBytes(OP_CONSTANT, makeConstant(value));
+}
+
 static void endCompiler() { emitReturn(); }
+
+static void parsePrecedence(Precedence precedence) {
+  // TODO: implement
+}
+
+static void expression() { parsePrecedence(PREC_ASSIGNMENT); }
+
+static void grouping() {
+  expression();
+
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+}
+
+static void number() {
+  double value = strtod(parser.previous.start, NULL);
+  emitConstant(value);
+}
+
+static void unary() {
+  TokenType operatorType = parser.previous.type;
+
+  // Compile the operand
+  parsePrecedence(PREC_UNARY);
+
+  // Emit the operator instruction
+  switch (operatorType) {
+  case TOKEN_MINUS: {
+    emitByte(OP_NEGATE);
+    break;
+  }
+  default: {
+    return;
+  }
+  }
+}
 
 bool compile(const char *source, Chunk *chunk) {
   initScanner(source);
